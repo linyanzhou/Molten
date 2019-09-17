@@ -584,6 +584,26 @@ static void redis_record(mo_interceptor_t *pit, mo_frame_t *frame)
 }
 /* }}} */
 
+/**************************************************/
+/*****************predis****************************/
+/**************************************************/
+/* {{{ predis default method record */
+static void default_predis_record(mo_interceptor_t *pit, mo_frame_t *frame)
+{
+    zval *span = build_com_record(pit, frame, 0);
+
+    merge_span_extra(span, frame);
+
+    pit->psb->span_add_ba_ex(span,  "componet", "Predis\\Client", frame->exit_time, pit->pct, BA_NORMAL);
+
+    pit->psb->span_add_ba_ex(span,  "db.type", "redis", frame->exit_time, pit->pct, BA_NORMAL);
+
+    /* check exception */
+    SET_DEFAULT_EXCEPTION(frame, pit);
+
+    /* add span */
+    mo_chain_add_span(pit->pct->pcl, span);
+}
 /*******************************************************/
 /*******************memcached***************************/
 /*******************************************************/
@@ -1539,6 +1559,14 @@ void mo_intercept_ctor(mo_interceptor_t *pit, struct mo_chain_st *pct, mo_span_b
         INIT_INTERCEPTOR_ELE(Elasticsearch\\Namespaces\\IndicesNamespace@delete, &default_capture,  &default_es_record);
         INIT_INTERCEPTOR_ELE(Elasticsearch\\Namespaces\\IndicesNamespace@create, &default_capture, &default_es_record);
     }
+
+    /* predis */
+    {
+        ADD_INTERCEPTOR_TAG(pit, Predis\\Client);
+        INIT_INTERCEPTOR_ELE(Predis\\Client@__construct, &default_capture, &default_predis_record);
+        INIT_INTERCEPTOR_ELE(Predis\\Client@__call, &default_capture, &default_predis_record);
+    }
+
 }
 /* }}} */
 

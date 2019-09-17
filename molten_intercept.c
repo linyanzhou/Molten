@@ -583,27 +583,6 @@ static void redis_record(mo_interceptor_t *pit, mo_frame_t *frame)
     mo_chain_add_span(pit->pct->pcl, span);
 }
 /* }}} */
-
-/**************************************************/
-/*****************predis****************************/
-/**************************************************/
-/* {{{ predis default method record */
-static void default_predis_record(mo_interceptor_t *pit, mo_frame_t *frame)
-{
-    zval *span = build_com_record(pit, frame, 0);
-
-    merge_span_extra(span, frame);
-
-    pit->psb->span_add_ba_ex(span,  "componet", "Predis\\Client", frame->exit_time, pit->pct, BA_NORMAL);
-
-    pit->psb->span_add_ba_ex(span,  "db.type", "redis", frame->exit_time, pit->pct, BA_NORMAL);
-
-    /* check exception */
-    SET_DEFAULT_EXCEPTION(frame, pit);
-
-    /* add span */
-    mo_chain_add_span(pit->pct->pcl, span);
-}
 /*******************************************************/
 /*******************memcached***************************/
 /*******************************************************/
@@ -1379,6 +1358,28 @@ static void es_request_record(mo_interceptor_t *pit, mo_frame_t *frame)
     
     pit->psb->span_add_ba_ex(span,  "db.type", "elasticsearch", frame->exit_time, pit->pct, BA_NORMAL);
     pit->psb->span_add_ba_ex(span,  "componet", "Elasticsearch\\Client", frame->exit_time, pit->pct, BA_NORMAL);
+
+    /* check exception */
+    SET_DEFAULT_EXCEPTION(frame, pit);
+
+    /* add span */
+    mo_chain_add_span(pit->pct->pcl, span);
+}
+/* }}} */
+
+/**************************************************/
+/*****************predis****************************/
+/**************************************************/
+/* {{{ predis record */
+static void default_predis_record(mo_interceptor_t *pit, mo_frame_t *frame)
+{
+    zval *span = build_com_record(pit, frame, 0);
+
+    merge_span_extra(span, frame);
+
+    pit->psb->span_add_ba_ex(span,  "componet", "Predis\\Client", frame->exit_time, pit->pct, BA_NORMAL);
+
+    pit->psb->span_add_ba_ex(span,  "db.type", "redis", frame->exit_time, pit->pct, BA_NORMAL);
 
     /* check exception */
     SET_DEFAULT_EXCEPTION(frame, pit);
